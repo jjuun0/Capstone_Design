@@ -7,6 +7,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torch.autograd import Function
+import torchsummary
 
 from op import conv2d_gradfix
 if torch.cuda.is_available():
@@ -668,3 +669,11 @@ class Discriminator(nn.Module):
             if i == max(self.layers):
                 break
         return output
+
+
+if __name__ == '__main__':
+    device = 'cuda'
+    generator = Generator(1024, 512, 8, 2)
+    discriminator = Discriminator(1024, 2).eval()
+    # torchsummary.summary(generator.cuda(), (18, 512), device=device)
+    print(discriminator)

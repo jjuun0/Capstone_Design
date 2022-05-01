@@ -16,58 +16,60 @@ from torchvision import transforms
 from tqdm import tqdm
 
 from e4e_projection import projection as e4e_projection
+from restyle_projection import projection as restyle_projection
 from model import Discriminator, Generator
 from util import align_face
 
 
-class Predictor(cog.Predictor):
+# class Predictor(cog.Predictor):
+class Predictor():
     def setup(self):
         pass
 
-    @cog.input("input_face", type=Path, help="Photo of human face")
-    @cog.input(
-        "pretrained",
-        type=str,
-        default=None,
-        help="Identifier of pretrained style",
-        options=[
-            "art",
-            "arcane_multi",
-            "sketch_multi",
-            "arcane_jinx",
-            "arcane_caitlyn",
-            "jojo_yasuho",
-            "jojo",
-            "disney",
-        ],
-    )
-    @cog.input("style_img_0", default=None, type=Path, help="Face style image (unused if pretrained style is set)")
-    @cog.input("style_img_1", default=None, type=Path, help="Face style image (optional)")
-    @cog.input("style_img_2", default=None, type=Path, help="Face style image (optional)")
-    @cog.input("style_img_3", default=None, type=Path, help="Face style image (optional)")
-    @cog.input(
-        "preserve_color",
-        default=False,
-        type=bool,
-        help="Preserve the colors of the original image",
-    )
-    @cog.input(
-        "num_iter", default=200, type=int, min=0, help="Number of finetuning steps (unused if pretrained style is set)"
-    )
-    @cog.input(
-        "alpha", default=1, type=float, min=0, max=1, help="Strength of finetuned style"
-    )
+    # @cog.input("input_face", type=Path, help="Photo of human face")
+    # @cog.input(
+    #     "pretrained",
+    #     type=str,
+    #     default=None,
+    #     help="Identifier of pretrained style",
+    #     options=[
+    #         "art",
+    #         "arcane_multi",
+    #         "sketch_multi",
+    #         "arcane_jinx",
+    #         "arcane_caitlyn",
+    #         "jojo_yasuho",
+    #         "jojo",
+    #         "disney",
+    #     ],
+    # )
+    # @cog.input("style_img_0", default=None, type=Path, help="Face style image (unused if pretrained style is set)")
+    # @cog.input("style_img_1", default=None, type=Path, help="Face style image (optional)")
+    # @cog.input("style_img_2", default=None, type=Path, help="Face style image (optional)")
+    # @cog.input("style_img_3", default=None, type=Path, help="Face style image (optional)")
+    # @cog.input(
+    #     "preserve_color",
+    #     default=False,
+    #     type=bool,
+    #     help="Preserve the colors of the original image",
+    # )
+    # @cog.input(
+    #     "num_iter", default=200, type=int, min=0, help="Number of finetuning steps (unused if pretrained style is set)"
+    # )
+    # @cog.input(
+    #     "alpha", default=1, type=float, min=0, max=1, help="Strength of finetuned style"
+    # )
     def predict(
         self,
         input_face,
         pretrained,
-        style_img_0,
-        style_img_1,
-        style_img_2,
-        style_img_3,
-        preserve_color,
-        num_iter,
-        alpha,
+        style_img_0=None,
+        style_img_1=None,
+        style_img_2=None,
+        style_img_3=None,
+        preserve_color=True,
+        num_iter=300,
+        alpha=1,
     ):
 
         device = "cuda"  # 'cuda' or 'cpu'
@@ -96,7 +98,8 @@ class Predictor(cog.Predictor):
         # aligns and crops face
         aligned_face = align_face(str(input_face))
 
-        my_w = e4e_projection(aligned_face, "input_face.pt", device).unsqueeze(0)
+        # my_w = e4e_projection(aligned_face, input_face + ".pt", device).unsqueeze(0)
+        my_w = restyle_projection(aligned_face, input_face + ".pt", device).unsqueeze(0)
 
         if pretrained is not None:
             if (
@@ -208,3 +211,10 @@ class Predictor(cog.Predictor):
         stylized_face.save(str(out_path))
 
         return out_path
+
+
+if __name__ == '__main__':
+    a = Predictor()
+    filename = 'iu.jpeg'
+    filepath = f'test_input/{filename}'
+    a.predict(filepath, 'disney')
