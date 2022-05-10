@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dropdown</title>
+</head>
+<body>
+
+
+<form method="POST" action="{{url_for('set_inference')}}" enctype = "multipart/form-data" >
+    <select name="file_list" id="filename" method="GET" action="/">
+        <option value="{{file_list[0]}}" selected>{{file_list[0]}}</option>
+        {% for file in file_list[1:] %}
+        <option value="{{file}}">{{file}}</option>
+        {% endfor %}
+    </select>
+   <b> <input type="file" id="profile_pt" name = "file"  onchange="previewImage(this, 'View_area');"/>
+       <div id='View_area' style='position:relative; width: 256px; height: 256px; color: black; border: 0px solid black; '></div>
+<!--       <div id='View_area' style='position:static; width: 256px; height: 256px; color: black; border: 0px solid black; display: inline; '></div>-->
+<!--       <div id='View_area' style='position:static; width: 256px; height: 256px; color: black; border: 0px solid black; '></div>-->
+   </b>
+
+    <input type='submit'><br>
+    <input type="button" value= "model_test" class="navyBtn" onclick="location.href='model_test'">
+</form>
+
+<script src="{{ url_for('static', filename='js/script.js') }}" > </script>
+</body>
+</html>

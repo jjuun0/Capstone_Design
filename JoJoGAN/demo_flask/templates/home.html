@@ -1,0 +1,28 @@
+<html>
+    <body bgcolor=#d4a3ae>
+
+        <h1> Toonify </h1><br>
+
+        <form method="POST" action="{{url_for('get_refer_img')}}" enctype = "multipart/form-data" >
+           <b> <input type="file" id="profile_pt" name = "file"  onchange="previewImage(this, 'View_area');"/>
+               <div id='View_area' style='position:relative; width: 256px; height: 256px; color: black; border: 0px solid black;'></div>
+           </b>
+
+            <select name="preserve_color" id="filename" method="GET" action="/">
+                <option value="input"> input image 컬러 유지 </option>
+                <option value="reference"> reference image 컬러 유지 </option>
+
+            </select>
+
+            <input type='submit'><br>
+            <input type="button" value= "model_test" class="navyBtn" onclick="location.href='model_test'">
+        </form>
+
+
+        <script src="{{ url_for('static', filename='js/script.js') }}" > </script>
+
+
+
+    </body>
+
+</html>
