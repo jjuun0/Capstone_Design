@@ -1,3 +1,13 @@
+# add loss
+- [identity loss](https://github.com/orpatashnik/StyleCLIP/blob/main/criteria/id_loss.py)
+- [style loss](https://github.com/williamyang1991/DualStyleGAN/blob/e1722601e1b349fdbee2585184d88273e8940022/finetune_dualstylegan.py#L266)
+- l2 loss : refer <-> generator image
+
+# change gan inversion
+- [ii2s](https://github.com/ZPdesu/II2S)
+- [restyle-encoder](https://github.com/yuval-alaluf/restyle-encoder)
+
+
 # JoJoGAN: One Shot Face Stylization
 [![arXiv](https://img.shields.io/badge/arXiv-2112.11641-b31b1b.svg)](https://arxiv.org/abs/2112.11641)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mchong6/JoJoGAN/blob/main/stylize.ipynb)
