@@ -1,0 +1,15 @@
+{
+    "gan_inversion": "e4e",
+
+    "train": {
+        "refer_name": ["anna2.jpeg"],
+        "preserve_color": "input",
+        "save_name": "anna2_restyle_per_l2_id.pt"
+    },
+
+    "inference": {
+        "character_name": "tadashi2.png",
+        "inputs":["messi.jpg", "son.png", "you.jpg", "lee.jpg", "park.jpeg", "dong.jpg", "jin.jpg"],
+        "ckpt_name": "models/jojo_tadashi2.pt"
+    }
+}
