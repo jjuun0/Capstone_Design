@@ -1,7 +1,9 @@
+import matplotlib.pyplot as plt
 import torch
 from torch import nn, Tensor
 from torch.nn import functional as F
 from typing import Optional
+import numpy as np
 
 
 def get_keys(d, name):
@@ -9,27 +11,6 @@ def get_keys(d, name):
         d = d['state_dict']
     d_filt = {k[len(name) + 1:]: v for k, v in d.items() if k[:len(name)] == name}
     return d_filt
-
-
-class LinearStyleMixing(nn.Module):
-    def __init__(self, in_dim, mode='train'):
-        super().__init__()
-        self.layer1 = nn.Linear(in_features=in_dim, out_features=512)
-        self.layer2 = nn.Linear(in_features=512, out_features=512)
-        self.layer3 = nn.Linear(in_features=512, out_features=512)
-        self.layer4 = nn.Linear(in_features=512, out_features=512)
-        self.layer5 = nn.Linear(in_features=512, out_features=512)
-
-
-    def forward(self, latent, random):
-        concat = torch.cat([latent, random], dim=1)
-        out1 = self.layer1(concat)
-        out2 = self.layer2(out1)
-        out3 = self.layer3(out2)
-        out4 = self.layer4(out3)
-        out5 = self.layer5(out4)
-        # return [out1, out2, out3, out4, out5]
-        return out5
 
 
 class TransformerStyleMixing(nn.Module):
@@ -53,18 +34,6 @@ class TransformerStyleMixing(nn.Module):
         self.activation = _get_activation_fn(activation)
         self.normalize_before = normalize_before
 
-        # self.pos_embedding = nn.Embedding(18, 512)
-
-        # self.load_weights()
-
-    def load_weights(self):
-        ckpt = torch.load(
-            ('/home/project/바탕화면/Capstone_Design/JoJoGAN/style_transformer/checkpoints/style_transformer_ffhq.pt'),
-            map_location='cpu')
-        # self.load_state_dict(get_keys(ckpt, 'encoder.module.transformerlayer_coarse'), strict=False)
-        # self.load_state_dict(get_keys(ckpt, 'encoder.module.transformerlayer_medium'), strict=False)
-        # self.load_state_dict(get_keys(ckpt, 'encoder.module.transformerlayer_fine'), strict=False)
-
     def with_pos_embed(self, tensor, pos: Optional[Tensor]):
         return tensor if pos is None else tensor + pos
 
@@ -78,7 +47,7 @@ class TransformerStyleMixing(nn.Module):
                      tgt_key_padding_mask: Optional[Tensor] = None,
                      memory_key_padding_mask: Optional[Tensor] = None,
                      pos: Optional[Tensor] = None,
-                     query_pos: Optional[Tensor] = None, ):
+                     query_pos: Optional[Tensor] = None, iter=None, step=None):
         # self-attention
         # q = k = self.with_pos_embed(tgt, query_pos)
         # tgt2 = self.self_attn(q, k, value=tgt, attn_mask=tgt_mask,
@@ -87,10 +56,24 @@ class TransformerStyleMixing(nn.Module):
         # tgt = self.norm1(tgt)
 
         # multi-attention
-        tgt2 = self.multihead_attn(query=self.with_pos_embed(tgt, query_pos),
-                                   key=self.with_pos_embed(memory, pos),
-                                   value=memory, attn_mask=memory_mask,
+
+        tgt2 = self.multihead_attn(query=self.with_pos_embed(tgt.unsqueeze(1), query_pos),
+                                   key=self.with_pos_embed(memory.unsqueeze(1), pos),
+                                   # value=tgt, attn_mask=memory_mask,
+                                   value=memory.unsqueeze(1), attn_mask=memory_mask,
                                    key_padding_mask=memory_key_padding_mask)[0]
+        # visualize attention score
+        # if step:
+        #     attention = tgt2.squeeze().detach().cpu().numpy()
+        #     att_re = np.zeros(attention.shape)
+        #     for i in range(attention.shape[0]):
+        #         att_re[i] = attention[i] / attention[i].max()
+        #     # tgt_cpu = tgt.detach().cpu().numpy()
+        #     # attention_mix = tgt_cpu * att_re
+        #     plt.imshow(attention, interpolation='nearest', aspect='auto')
+        #     plt.savefig(f'moana_middle/{step}/{iter:03d}.png')
+
+        tgt2 = tgt2.squeeze()
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
@@ -127,29 +110,12 @@ class TransformerStyleMixing(nn.Module):
                 tgt_key_padding_mask: Optional[Tensor] = None,
                 memory_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None,
-                query_pos: Optional[Tensor] = None):
+                query_pos: Optional[Tensor] = None, iter=None, step=None):
         if self.normalize_before:
             return self.forward_pre(tgt, memory, tgt_mask, memory_mask,
                                     tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
         return self.forward_post(tgt, memory, tgt_mask, memory_mask,
-                                 tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos)
-
-
-class Transformer(nn.Module):
-    def __init__(self, depth, d_model, nhead, dim_feedforward, dropout=0.1, normalize_before=False):
-        super().__init__()
-        self.layers = nn.ModuleList([])
-        for _ in range(depth):
-            self.layers.append(
-                MixingTransformer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout)
-                # TransformerStyleMixing(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout)
-            )
-
-    def forward(self, latent, random):
-        for attn in self.layers:
-            # latent = attn(latent, random) + latent
-            latent = attn(latent, random)
-        return latent
+                                 tgt_key_padding_mask, memory_key_padding_mask, pos, query_pos, iter=iter, step=step)
 
 
 class MixingTransformer(nn.Module):
@@ -165,6 +131,7 @@ class MixingTransformer(nn.Module):
         #                                                     dim_feedforward=dim_feedforward, dropout=dropout)
         self.mode = mode
         self.load_weights(name)
+        self.iter = 1
 
         # self.coarse_pos = nn.Embedding(4, 512)
         # self.medium_pos = nn.Embedding(4, 512)
@@ -188,8 +155,13 @@ class MixingTransformer(nn.Module):
                 map_location='cpu')
         elif self.mode == 'test':
             ckpt = torch.load(
-                (f'/home/project/바탕화면/Capstone_Design/JoJoGAN/models/tf_multi_{name}.pt'),
+                (f'/home/project/바탕화면/Capstone_Design/JoJoGAN/models/tf_middle_{name}.pt'),
                 map_location='cpu')
+
+            # ckpt = torch.load(
+            #     (f'/home/project/바탕화면/Capstone_Design/JoJoGAN/models/tf_fine_{name}.pt'),
+            #     map_location='cpu')
+
         elif self.mode == 'flask':
             ckpt = torch.load((f'demo_flask/static/models/tf/{name}.pt'), map_location='cpu')
             # ckpt = torch.load(
@@ -215,17 +187,26 @@ class MixingTransformer(nn.Module):
         # fine = self.transformerlayer_fine(latent[:, 8:], random[:, 8:])
         # attn_style = torch.cat([coarse, medium, fine], dim=1)
 
+        # coarse = self.transformerlayer_coarse(latent[:4], random[:4])
+        # medium = self.transformerlayer_medium(latent[4:8], random[4:8], iter=self.iter, step='middle')
+        fine = self.transformerlayer_fine(latent[8:], random[8:], iter=self.iter, step='fine')
+        # # attn_style = torch.cat([coarse, medium, fine], dim=0)
+        attn_style = torch.cat([latent[:4], latent[4:8], fine], dim=0)
+        # attn_style = torch.cat([latent[:4], medium, fine], dim=0)
+
         # t2: (18,512)
         # coarse = self.transformerlayer_coarse(latent[:4,:], random[:4,:])
-        if self.mode == 'train':
-            medium = self.transformerlayer_medium(latent[4:8,:], random[4:8,:])
-        fine = self.transformerlayer_fine(latent[8:,:], random[8:,:])
 
-        # attn_style = torch.cat([coarse, medium, fine], dim=0)
-        if self.mode == 'train':
-            attn_style = torch.cat([latent[:4,:], medium, fine], dim=0)
-        elif self.mode == 'test' or self.mode == 'flask':
-            attn_style = torch.cat([latent[:4,:], latent[4:8,:], fine], dim=0)
+        #
+        # if self.mode == 'train':
+        #     medium = self.transformerlayer_medium(latent[4:8,:], random[4:8,:])
+        # fine = self.transformerlayer_fine(latent[8:,:], random[8:,:])
+        #
+        # # attn_style = torch.cat([coarse, medium, fine], dim=0)
+        # if self.mode == 'train':
+        #     attn_style = torch.cat([latent[:4,:], medium, fine], dim=0)
+        # elif self.mode == 'test' or self.mode == 'flask':
+        #     attn_style = torch.cat([latent[:4,:], latent[4:8,:], fine], dim=0)
 
         # swap = [9, 11, 15, 16, 17]
         # fix_layer = self.transformerlayer_fine(latent[swap], random[swap])
@@ -249,6 +230,7 @@ class MixingTransformer(nn.Module):
         # fine = self.transformerlayer_fine(medium, random)
         # attn_style = fine
         # print(self.coarse_pos)
+        self.iter += 1
         return attn_style
 
 

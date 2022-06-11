@@ -217,4 +217,11 @@ def align_face(filepath, output_size=1024, transform_size=4096, enable_padding=T
     # Return aligned image.
     return img  # shape = (1024, 1024)
 
+def img_plot(refer, face_input, toonify1, toonify2, save_path):
+    from torchvision import utils
+
+    stack = torch.cat([refer, face_input, toonify1, toonify2], 0)
+    # stacks = torch.cat([stack[0], stack[1], stack[2]], 2)
+    utils.save_image(utils.make_grid(stack), fp=save_path)
+
 

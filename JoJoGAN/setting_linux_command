@@ -1,0 +1,27 @@
+# 리눅스 세팅 JoJoGAN 명령어
+# Ubuntu 20.04
+# CUDA 11.3
+# cuDNN 8.2.0
+# Pytorch 1.11.0
+# Python 3.7
+
+conda create --name jojo python=3.7
+
+conda install -c conda-forge tqdm
+conda install -c conda-forge gdown
+conda install -c anaconda scikit-learn=0.22
+conda install -c anaconda scipy
+conda install -c conda-forge lpips
+conda install -c conda-forge dlib
+conda install -c conda-forge wandb
+conda install -c conda-forge matplotlib
+
+# Stable(1.11.0) / Linux / Conda / Python / CUDA 11.3 
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+
+pip install opencv-python
+
+!wget https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
+!sudo unzip ninja-linux.zip -d /usr/local/bin/
+# 본인 가상환경의 bin 폴더 경로 수정해야함
+!sudo update-alternatives --install /home/project/anaconda3/envs/jojo/bin/ninja ninja /usr/local/bin/ninja 1 --force

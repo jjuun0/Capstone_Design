@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Train</title>
+</head>
+<html>
+    <body bgcolor=#d4a3ae>
+        <div><center><h1> 모델 학습하기 </h1><br> </center></div>
+        <div><center><form method="POST" action="{{url_for('get_refer_img')}}" enctype = "multipart/form-data" >
+            <p><input type="file"  accept="image/*" name="refer_img" id="file"  onchange="loadFile(event)" style="display: none;"></p>
+
+            <p><h3><label for="file" style="cursor: pointer;"> 1. 캐릭터 이미지 업로드 클릭 </label></h3></p>
+            <p><img id="select_img" width="240" /></p>
+
+            <br>
+            <p><h3>2. 저장할 모델 이름을 영어로 적어주세요 <input type='text' placeholder="disney" name="save_name" method="GET" style="height: 30px; font-size:20px;"></h3><br></p>
+            <p><h3>3. 준비가 다 되었다면 학습을 진행해주세요 <input type='submit' style="width:80pt;height:30pt; font-size:20px;" value="학습하기"></h3><br></p>
+
+            <br><br><br>
+            <input type="button" value="모델 테스트하러 가기" class="navyBtn" style="width:150pt;height:30pt; font-size:20px;" onclick="location.href='model_inference'">
+
+        </form></center></div>
+
+        <script>
+            var loadFile = function(event) {
+                var image = document.getElementById('select_img');
+	            image.src = URL.createObjectURL(event.target.files[0]);
+            };
+        </script>
+
+    </body>
+
+</html>
+
+<!--https://stackoverflow.com/questions/55658488/how-to-make-a-progress-bar-on-a-web-page-for-pandas-operation-->

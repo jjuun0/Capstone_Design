@@ -48,4 +48,5 @@ def run_on_batch(inputs, net, opts, avg_image):
             y_hat = net.face_pool(y_hat)
 
     # return results_batch, results_latent
-    return latent[0]
+    # return latent[0]
+    return latent

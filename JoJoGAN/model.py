@@ -1,21 +1,22 @@
 import math
-import random
-import functools
-import operator
+# import random
+# import functools
+# import operator
 
 import torch
+# import torchvision.utils
 from torch import nn
 from torch.nn import functional as F
-from torch.autograd import Function
-import torchsummary
+# from torch.autograd import Function
+# import torchsummary
 
 from op import conv2d_gradfix
 if torch.cuda.is_available():
     from op.fused_act import FusedLeakyReLU, fused_leaky_relu
     from op.upfirdn2d import upfirdn2d
-else:
-    from op.fused_act_cpu import FusedLeakyReLU, fused_leaky_relu
-    from op.upfirdn2d_cpu import upfirdn2d
+# else:
+#     from op.fused_act_cpu import FusedLeakyReLU, fused_leaky_relu
+#     from op.upfirdn2d_cpu import upfirdn2d
 
 
 class PixelNorm(nn.Module):
@@ -541,18 +542,28 @@ class Generator(nn.Module):
         else:
             latent = styles
 
-        out = self.input(latent)
-        out = self.conv1(out, latent[:, 0], noise=noise[0])
+        out = self.input(latent)  # (1,512,4,4)
+        out = self.conv1(out, latent[:, 0], noise=noise[0])  # (1,512,4,4)
 
-        skip = self.to_rgb1(out, latent[:, 1])
+        skip = self.to_rgb1(out, latent[:, 1])  # (1,3,4,4)
 
         i = 1
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
+            # 8, 16, 32, ,,,
             out = conv1(out, latent[:, i], noise=noise1)
+            # if out.size(-1) == 512:
+            #     for i, o in enumerate(out[0]):
+            #         torchvision.utils.save_image(o, f'/home/project/바탕화면/jojogan_input/jojo/feature/messi_{i:03d}_{skip.size(-1)}.png',
+            #                                  normalize=True, range=(-1, 1))
             out = conv2(out, latent[:, i + 1], noise=noise2)
+            # if out.size(-1) == 512:
+            #     for i, o in enumerate(out[0]):
+            #         torchvision.utils.save_image(o, f'/home/project/바탕화면/jojogan_input/jojo/feature/c2_{i:03d}_{skip.size(-1)}.png',
+            #                                  normalize=True, range=(-1, 1))
             skip = to_rgb(out, latent[:, i + 2], skip)
+            # torchvision.utils.save_image(skip, f'/home/project/바탕화면/jojogan_input/jojo/feature/{skip.size(-1)}.png',normalize=True,range=(-1,1))
 
             i += 2
 
@@ -658,6 +669,7 @@ class Discriminator(nn.Module):
 
         self.convs = nn.ModuleList(convs)
         self.layers = (1,3,4,5)
+        # self.layers = (1,3,5)
 
     def forward(self, input):
         output = []
@@ -673,7 +685,10 @@ class Discriminator(nn.Module):
 
 if __name__ == '__main__':
     device = 'cuda'
+    print(1)
     generator = Generator(1024, 512, 8, 2)
-    discriminator = Discriminator(1024, 2).eval()
-    # torchsummary.summary(generator.cuda(), (18, 512), device=device)
-    print(discriminator)
+    # discriminator = Discriminator(1024, 2).eval()
+    # torchsummary.summary(generator.to(device), (1, 18, 512), device=device)
+    param = generator.parameters()
+    # print(discriminator)
+    print(generator)

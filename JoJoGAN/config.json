@@ -1,5 +1,5 @@
 {
-    "gan_inversion": "e4e",
+    "gan_inversion": "restyle",
 
     "train": {
         "refer_name": ["anna2.jpeg"],
@@ -8,8 +8,8 @@
     },
 
     "inference": {
-        "character_name": "tadashi2.png",
+        "character_name": "plin.jpg",
         "inputs":["messi.jpg", "son.png", "you.jpg", "lee.jpg", "park.jpeg", "dong.jpg", "jin.jpg"],
-        "ckpt_name": "models/jojo_tadashi2.pt"
+        "ckpt_name": "models/g_fine_plin.pt"
     }
 }

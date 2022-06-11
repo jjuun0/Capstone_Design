@@ -32,4 +32,4 @@ def projection(img, name, device='cuda'):
     # result_file = {}
     # result_file['latent'] = w_plus[0]  # tensor (18, 512)
     # torch.save(result_file, name)
-    return w_plus[0]
+    return w_plus

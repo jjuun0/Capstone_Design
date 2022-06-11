@@ -1,29 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+<body bgcolor=#d4a3ae>
+<div><center><h1> 학습한 모델을 테스트해보기 </h1><br> </center></div>
+
 <head>
     <meta charset="UTF-8">
-    <title>Dropdown</title>
+    <title>Inference</title>
 </head>
-<body>
 
+        <div><center><form method="POST" action="{{url_for('set_inference')}}" enctype = "multipart/form-data" >
+            <p><h3> 1. 학습한 모델을 선택해주세요
+                <select name="file_list" id="filename" method="GET" action="/" style="height: 30px; font-size:20px;">
+                <option value="{{file_list[0]}}" selected>{{file_list[0]}}</option>
+                {% for file in file_list[1:] %}
+                <option value="{{file}}">{{file}}</option>
+                {% endfor %}
+                </select></h3></p>
+            <p><input type="file"  accept="image/*" name="face_img" id="file"  onchange="loadFile(event)" style="display: none;"></p>
+            <br>
 
-<form method="POST" action="{{url_for('set_inference')}}" enctype = "multipart/form-data" >
-    <select name="file_list" id="filename" method="GET" action="/">
-        <option value="{{file_list[0]}}" selected>{{file_list[0]}}</option>
-        {% for file in file_list[1:] %}
-        <option value="{{file}}">{{file}}</option>
-        {% endfor %}
-    </select>
-   <b> <input type="file" id="profile_pt" name = "file"  onchange="previewImage(this, 'View_area');"/>
-       <div id='View_area' style='position:relative; width: 256px; height: 256px; color: black; border: 0px solid black; '></div>
+            <p><h3><label for="file" style="cursor: pointer;"> 2. 캐릭터화 시키고 싶은 얼굴 이미지 업로드 클릭 </label></h3></p>
+            <p><img id="select_img" width="240" /></p>
+<!--   <b> <input type="file" id="profile_pt" name = "file"  onchange="previewImage(this, 'View_area');"/>-->
+<!--       <div id='View_area' style='position:relative; width: 256px; height: 256px; color: black; border: 0px solid black; '></div>-->
 <!--       <div id='View_area' style='position:static; width: 256px; height: 256px; color: black; border: 0px solid black; display: inline; '></div>-->
 <!--       <div id='View_area' style='position:static; width: 256px; height: 256px; color: black; border: 0px solid black; '></div>-->
-   </b>
+<!--   </b>-->
+<!--            <input type="button" value= "model_inference" class="navyBtn" onclick="location.href='model_inference'">-->
+        <input type="submit" value="캐릭터화 수행하기 클릭" style="width:180pt;height:30pt; font-size:20px;"><br>
+        </form></center></div>
 
-    <input type='submit'><br>
-    <input type="button" value= "model_test" class="navyBtn" onclick="location.href='model_test'">
-</form>
 
-<script src="{{ url_for('static', filename='js/script.js') }}" > </script>
+
+<!--<script src="{{ url_for('static', filename='js/script.js') }}" > </script>-->
+        <script>
+            var loadFile = function(event) {
+                var image = document.getElementById('select_img');
+	            image.src = URL.createObjectURL(event.target.files[0]);
+            };
+        </script>
 </body>
 </html>
