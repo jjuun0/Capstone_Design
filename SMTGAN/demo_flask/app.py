@@ -3,7 +3,7 @@ from flask import Flask, request, render_template
 import sys
 sys.path.append(".")
 sys.path.append("..")
-from jojo_main import flask_inference
+from smtgan_predict import flask_inference
 from train import flask_train
 from werkzeug.utils import secure_filename
 # from PIL import Image

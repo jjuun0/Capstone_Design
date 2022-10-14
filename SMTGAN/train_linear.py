@@ -148,51 +148,12 @@ def train(save_name, img_name, preserve_color_info='input'):
         # mix_w = latent.clone()
         # in_latent[:, id_swap] = alpha * latents[:, id_swap] + (1 - alpha) * mean_w[:, id_swap]
 
-        # linearStyleMixing
-        # b = style_mixing_model(latent[:, id_swap], random_w[:, id_swap])
-        # mix_w[:, id_swap] = b
-        # mix_w[:, id_swap] = style_mixing_model(latent[:, id_swap], random_w[:, id_swap])
-        # with torch.no_grad():
-        #     mix_w = style_mixing_model(latent, random_w)  # latent: query, random_w: key, value:
-        # with torch.no_grad():
-        #     mix_w = style_mixing_model(latent, random_w)  # latent: query, random_w: key, value
-        # t1
-        # mix_w = style_mixing_model(latent, random_w)
 
-        # mix_w = style_mixing_model(latent[0], random_w[0])
-        # t2
         mix_w = style_mixing_model(latent[0], random_w[0]).unsqueeze(0)
-        # t3
-        # mix_w = style_mixing_model(latent[0].permute(1,0), random_w[0].permute(1,0)).unsqueeze(0).permute(0,2,1)
-        # l2_loss = F.mse_loss(latent, mix_w)
-        # loss = l2_loss
 
 
         fake_img = generator(mix_w, input_is_latent=True)
-        # fake_img = generator(latent, input_is_latent=True)
 
-        # with torch.no_grad():
-        #     fake_img = generator(mix_w, input_is_latent=True)
-        #
-        # my_sample = fake_img.cpu()
-        #
-        # my_sample = 1 + my_sample
-        # my_sample /= 2
-        #
-        # my_sample = my_sample[0]
-        # my_sample = 255 * torch.clip(my_sample, min=0, max=1)
-        # my_sample = my_sample.byte()
-        #
-        # my_sample = my_sample.permute(1, 2, 0).detach().numpy()
-        # my_sample = Image.fromarray(my_sample, mode="RGB")
-        #
-        # out_path = Path(f'/home/project/바탕화면/jojogan_input/tf_load/{idx:03d}.png')
-        # my_sample.save(str(out_path))
-
-        fake_img_256 = F.adaptive_avg_pool2d(fake_img, 256)
-        fake_feats = vggloss(fake_img_256)
-        fake_styles = [F.adaptive_avg_pool2d(fake_feat, output_size=1) for fake_feat in fake_feats]
-        #
         with torch.no_grad():
             real_feat = discriminator(targets)
         fake_feat = discriminator(fake_img)
@@ -200,7 +161,6 @@ def train(save_name, img_name, preserve_color_info='input'):
         # perceptual loss
         perceptual_loss = sum([F.l1_loss(a, b) for a, b in zip(fake_feat, real_feat)]) / len(fake_feat) * PX_loss
         loss = perceptual_loss
-        # loss += perceptual_loss
 
         # l2 loss
         # l2_loss = F.mse_loss(targets.detach(), fake_img)
@@ -210,41 +170,14 @@ def train(save_name, img_name, preserve_color_info='input'):
         # identity_loss = loss_id(fake_img, targets.detach()) * ID_loss
         # loss += identity_loss
 
-        # dualstylegan - style loss
-        # sty_loss = loss_cl(fake_feats[2], real_feats[2].detach()) * CX_loss
-        # cx_loss = loss_cl(fake_feats[2], real_feats[2].detach()) * CX_loss
-        # cx_loss = loss_cl(fake_feats[3], real_feats[3].detach()) * CX_loss
-        # #
-        # sty_loss = ((F.mse_loss(fake_styles[1], real_styles[1])
-        #               + F.mse_loss(fake_styles[2], real_styles[2])) * Style_loss)
-        # # #
-        # loss += sty_loss
-        # loss = cx_loss + sty_loss
-        # loss += cx_loss
-
-        # for ii, weight in enumerate(vgg_weights):
-        #     if weight * perc_loss > 0:
-        #         per_loss += F.l1_loss(fake_feats[ii], real_feats[ii].detach()) * weight * perc_loss
-
-        # loss = per_loss + sty_loss
-        # yield [idx, num_iter]
         if idx % 30:
             print(f'perceptual_loss : {perceptual_loss}')
-            # print(f'l2 loss : {l2_loss}')
-            # print(f'id loss : {identity_loss}')  # 0.00xx
-            # print(f'sty_loss : {sty_loss}')  # 0.2xx
-            # print(f'cx_loss : {cx_loss}')  # 0.2xx
-        #     # print(f'per_loss : {per_loss}')  #
-        #
+
         g_optim.zero_grad()
         loss.backward()
         g_optim.step()
 
     # save generative model
-    # torch.save({"g": generator.state_dict()}, f'models/{save_name}_{preserve_color_info}_{gan_inversion}_per_id.pt')
-    # torch.save({"g": generator.state_dict()}, f'models/cx_per05_loss_multi_transformer_2_relu_{name}.pt')
-    # torch.save({"g": generator.state_dict()}, f'models/multi3_per1_cx025{name}.pt')
-    # torch.save({"g": generator.state_dict()}, f'models/mixtf_t2_self_load_per_id_{name}.pt')
     torch.save({"g": generator.state_dict()}, f'models/g_multi_{name}.pt')
     torch.save(style_mixing_model.state_dict(), f'models/tf_multi_{name}.pt')
 
