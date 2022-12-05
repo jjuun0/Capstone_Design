@@ -67,7 +67,7 @@
 
 - One-shot generation & Style Transfer
   
-  - [JoJoGAN]([GitHub - mchong6/JoJoGAN: Official PyTorch repo for JoJoGAN: One Shot Face Stylization](https://github.com/mchong6/JoJoGAN))
+  - [JoJoGAN](https://github.com/mchong6/JoJoGAN)
 
 - GAN Inversion
   
