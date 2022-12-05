@@ -21,6 +21,3 @@ class ConfigParser:
 if __name__ == '__main__':
     config = ConfigParser('./config.json')
     print(0)
-
-
-    # "start_frame_num": 146,

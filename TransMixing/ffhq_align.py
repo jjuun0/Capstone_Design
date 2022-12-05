@@ -13,14 +13,8 @@ def image_align(src_file, output_size=1024, transform_size=4096, enable_padding=
         # Align function from FFHQ dataset pre-processing step
         # https://github.com/NVlabs/ffhq-dataset/blob/master/download_ffhq.py
         transform_size = output_size
-
         landmarks_detector = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, flip_input=False)
-        # to_tensor = torchvision.transforms.ToTensor()
-        # img = np.array(PIL.Image.open(src_file).convert('RGB'))
-        # img = to_tensor(PIL.Image.open(src_file).convert('RGB')).permute(1,2,0)
         face_landmarks = landmarks_detector.get_landmarks(src_file)
-        # if face_landmarks:
-        #     aligned_face_path = os.path.join(args.dst, f'align-{img_name}')
 
         lm = np.array(face_landmarks[0])
         lm_chin          = lm[0  : 17, :2]  # left-right
@@ -121,10 +115,6 @@ if __name__ == '__main__':
 
         face_landmarks = landmarks_detector.get_landmarks(raw_img_path)
         if face_landmarks:
-            # for i, face_landmarks in enumerate(landmarks_detector.get_landmarks(raw_img_path), start=1):
             for i, face_landmarks in enumerate(face_landmarks):
-
                 aligned_face_path = os.path.join(args.dst, f'align-{img_name}')
-
-                # image_align(raw_img_path, aligned_face_path, face_landmarks, args.output_size, args.transform_size, args.no_padding)
                 image_align(raw_img_path, args.output_size, args.transform_size, args.no_padding)
